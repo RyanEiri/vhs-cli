@@ -1,0 +1,15 @@
+# Media files
+*.mkv
+*.mp4
+*.wav
+*.avi
+
+# OBS/HandBrake config snapshots (live state, not tracked)
+vhs-env/*/obs-studio/
+vhs-env/*/fr.handbrake.ghb/
+
+# Logs
+logs/
+
+# Backups
+*.bak
