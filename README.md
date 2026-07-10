@@ -39,12 +39,23 @@ This pipeline is built and run on a single Linux workstation:
     binary hardcodes support for (`realesrgan-x4plus`, `-x4plus-anime`,
     `realesrnet-x4plus`, `realesr-animevideov3*`); anything else segfaults it
     regardless of what's on disk — see "Choosing a model" below.
-- **VHS capture device:** MacroSilicon MS210x USB video grabber (an
-  "EasierCAP"-type dongle, USB ID `534d:0021`) — video via V4L2 (720×480
-  YUYV422 @ 30fps), audio via its onboard USB audio interface (ALSA card
-  `MS210x`, 48kHz stereo). Pinned by USB id at
-  `/dev/v4l/by-id/usb-MACROSIL_AV_TO_USB2.0-video-index0` so it survives port
-  changes.
+- **VHS capture device (the flakiest link in the pipeline):** MacroSilicon
+  MS210x USB video grabber — a low-cost USB2.0 analog capture dongle (USB ID
+  `534d:0021`, chipset commonly sold under "EasierCAP" and similar
+  generic-brand names). Specifics that matter when something goes wrong here:
+  - **Video and audio are two independent interfaces on the same dongle**,
+    not a synced A/V pair — video via V4L2 (720×480 YUYV422 @ 30fps), audio
+    via a separate onboard USB-audio ALSA card (`hw:CARD=MS210x,DEV=0`,
+    48kHz stereo). They *will* drift relative to each other over a long
+    capture; that's exactly what `vhs_fix_sync.sh` exists to correct
+    after the fact.
+  - **Referenced only by its persistent `/dev/v4l/by-id/` path**
+    (`usb-MACROSIL_AV_TO_USB2.0-video-index0`), never a bare `/dev/videoN` —
+    this machine has other V4L2-capable devices (a second, unrelated USB
+    webcam), so plain device numbering isn't stable across replugs/reboots.
+  - If a capture looks stuck, garbled, or silently drops frames, suspect
+    this dongle (loose USB connection, a flaky USB hub in the chain, or the
+    device needing a replug) before the CPU/GPU or ffmpeg config.
 - **Game/console capture** (separate `game` env slot — not used by the VHS
   pipeline itself): a Blackmagic Design Intensity Pro PCIe card, via OBS's
   DeckLink plugin.
