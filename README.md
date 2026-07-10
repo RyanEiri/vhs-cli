@@ -26,6 +26,37 @@ The scripts are intentionally small, single‑purpose, and composable.
 
 ---
 
+## Hardware
+
+This pipeline is built and run on a single Linux workstation:
+
+- **CPU:** AMD Ryzen 9 5900X (12-core) — QTGMC/IVTC (VapourSynth), denoise
+  (SoX/ffmpeg), and viewer encodes (libx264) are all CPU-bound.
+- **GPU:** AMD Radeon RX 7800 XT (RDNA 3, gfx1101) — drives both upscale backends:
+  - **ROCm** (PyTorch, via `realesrgan-rocm`) — required for the community
+    VHS-specific models (`2x_VHS-Film`, `ToonVHS-1x`, `VHS-Sharpen-1x`).
+  - **Vulkan** (`realesrgan-ncnn-vulkan`) — limited to the model families the
+    binary hardcodes support for (`realesrgan-x4plus`, `-x4plus-anime`,
+    `realesrnet-x4plus`, `realesr-animevideov3*`); anything else segfaults it
+    regardless of what's on disk — see "Choosing a model" below.
+- **VHS capture device:** MacroSilicon MS210x USB video grabber (an
+  "EasierCAP"-type dongle, USB ID `534d:0021`) — video via V4L2 (720×480
+  YUYV422 @ 30fps), audio via its onboard USB audio interface (ALSA card
+  `MS210x`, 48kHz stereo). Pinned by USB id at
+  `/dev/v4l/by-id/usb-MACROSIL_AV_TO_USB2.0-video-index0` so it survives port
+  changes.
+- **Game/console capture** (separate `game` env slot — not used by the VHS
+  pipeline itself): a Blackmagic Design Intensity Pro PCIe card, via OBS's
+  DeckLink plugin.
+- **Upscale scratch storage:** a secondary drive mounted at
+  `/media/ryan/Patriot/Videos/` — `vhs_upscale_work/` (chunked upscale
+  checkpoints) lives there by default (`WORK_ROOT` in the upscale scripts).
+
+None of this is hardcoded beyond the defaults above — device paths, `WORK_ROOT`,
+`UPSCALE_BACKEND`, and `MODEL` are all environment-variable overridable per script.
+
+---
+
 ## Directory Layout
 
 ```
