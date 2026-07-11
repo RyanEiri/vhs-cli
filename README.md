@@ -1,5 +1,14 @@
 # vhs-cli — VHS Digitization Pipeline
 
+![vhs-cli banner](banner.png)
+
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+![Language: Bash](https://img.shields.io/badge/language-Bash-4EAA25.svg)
+![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey.svg)
+
+<details>
+<summary>Terminal version</summary>
+
 ```
 +----+ > VHS-CLI +------------------------------------------------------------+
 |                                                                             |
@@ -15,9 +24,9 @@
 +-----------------------------------------------------------------------------+
 ```
 
-[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-![Language: Bash](https://img.shields.io/badge/language-Bash-4EAA25.svg)
-![Platform: Linux](https://img.shields.io/badge/platform-Linux-lightgrey.svg)
+`cat banner.ans` in a 256-color terminal for the vibrant ANSI-colored version.
+
+</details>
 
 This repository contains the bash-script **VHS digitization pipeline with archival
 intent** — capture, denoise, deinterlace, viewer-encode, and AI-upscale. It's the
