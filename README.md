@@ -58,7 +58,15 @@ This pipeline is built and run on a single Linux workstation:
     device needing a replug) before the CPU/GPU or ffmpeg config.
 - **Game/console capture** (separate `game` env slot — not used by the VHS
   pipeline itself): a Blackmagic Design Intensity Pro PCIe card, via OBS's
-  DeckLink plugin.
+  DeckLink plugin. Worth noting given the MS210x's own flakiness above: the
+  cheap USB dongle is the one that actually works. The "proper" dedicated
+  capture card currently does **not** — every logged OBS session
+  (`vhs-env/game/obs-studio/logs/`) shows `decklink: Starting capture...`
+  immediately followed by `decklink: Failed to enable video input`, 100% of
+  attempts across two months of logs. The likely cause visible in those same
+  logs: OBS's decklink plugin was compiled against Desktop Video SDK 12.0,
+  but the installed Blackmagic Desktop Video driver is 15.3/15.3.1 — a large
+  API version gap. Not yet root-caused or fixed.
 - **Upscale scratch storage:** a secondary drive mounted at
   `/media/ryan/Patriot/Videos/` — `vhs_upscale_work/` (chunked upscale
   checkpoints) lives there by default (`WORK_ROOT` in the upscale scripts).
