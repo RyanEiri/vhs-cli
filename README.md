@@ -96,8 +96,9 @@ This pipeline is built and run on a single Linux workstation:
   but the installed Blackmagic Desktop Video driver is 15.3/15.3.1 — a large
   API version gap. Not yet root-caused or fixed.
 - **Upscale scratch storage:** a secondary drive mounted at
-  `/media/ryan/Patriot/Videos/` — `vhs_upscale_work/` (chunked upscale
-  checkpoints) lives there by default (`WORK_ROOT` in the upscale scripts).
+  `/media/<user>/<external-drive>/Videos/` — `vhs_upscale_work/` (chunked
+  upscale checkpoints) lives there by default (`WORK_ROOT` in the upscale
+  scripts).
 
 None of this is hardcoded beyond the defaults above — device paths, `WORK_ROOT`,
 `UPSCALE_BACKEND`, and `MODEL` are all environment-variable overridable per script.
@@ -770,7 +771,7 @@ The negative PID in `kill` targets the entire process group, ensuring child proc
 
 A Blu‑ray ripping and re‑encoding pipeline is planned to complement the VHS workflow, producing the same archival and viewer derivative structure.
 
-**Hardware:** The Blu‑ray drive is physically installed on the Proxmox node `shakyamuni.buddha.lan` and is accessible from the `files.buddha.lan` VM. The drive is currently disconnected.
+**Hardware:** The Blu‑ray drive is physically installed on a Proxmox host and is accessible from an NFS VM on the local network. The drive is currently disconnected.
 
 ---
 
