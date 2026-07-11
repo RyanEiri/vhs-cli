@@ -804,6 +804,13 @@ Sourced from [OpenModelDB](https://openmodeldb.info/). Verify each model's licen
 
 **Vulkan/ncnn backend** (`.param` + `.bin`): `~/opt/realesrgan-ncnn/models/`. `realesrgan-ncnn-vulkan` hardcodes its network architecture by matching the model name against `realesrgan-x4plus`, `realesrgan-x4plus-anime`, `realesrnet-x4plus`, or `realesr-animevideov3*` — any other name segfaults it, even with valid `.param`/`.bin` files present. The upscale scripts and vhs-gui only discover/offer names in that set for the Vulkan backend; the community VHS models below are ROCm-only regardless of what files exist in this directory.
 
+**Don't want to hunt these down individually?** All of the above — official
+and community models, both `.pth` and ncnn `.param`/`.bin` formats — are
+packaged as ready-to-extract archives on the
+[`models-v1` release](https://github.com/RyanEiri/vhs-cli/releases/tag/models-v1),
+with a `MODEL-CREDITS.md` documenting each model's license and original
+author.
+
 ### Choosing a model
 
 | Scenario | Model | Int. Scale | Final Scale | Script |
