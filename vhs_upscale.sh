@@ -40,7 +40,7 @@
 #   crf             = 21
 #
 # Environment variables (optional):
-#   WORK_ROOT        Workdir root (default: "$PWD/vhs_upscale_work")
+#   WORK_ROOT        Workdir root (default: "$HOME/Videos/vhs_upscale_work")
 #   MODELS_DIR       Real-ESRGAN models dir (default: "$HOME/opt/realesrgan-ncnn/models")
 #   MODEL            Model name (default: realesrgan-x4plus)
 #   INTERNAL_SCALE   Internal scale factor (default: 4)
@@ -83,7 +83,7 @@ SEG_SECONDS="${3:-30}"
 CRF="${4:-21}"
 
 # ---- knobs ----
-WORK_ROOT="${WORK_ROOT:-/media/$USER/scratch/Videos/vhs_upscale_work}"
+WORK_ROOT="${WORK_ROOT:-$HOME/Videos/vhs_upscale_work}"
 MODELS_DIR="${MODELS_DIR:-$HOME/opt/realesrgan-ncnn/models}"
 MODEL="${MODEL:-realesrgan-x4plus}"
 INTERNAL_SCALE="${INTERNAL_SCALE:-4}"
