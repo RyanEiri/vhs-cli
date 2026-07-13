@@ -100,11 +100,15 @@ preview_out=()
 if [ "${VHS_PREVIEW:-0}" = "1" ]; then
   _preview_url="${VHS_PREVIEW_URL:-udp://127.0.0.1:23000?pkt_size=1316}"
   _preview_scale="${VHS_PREVIEW_SCALE:-480:360}"
+  # -t must be repeated here: ffmpeg output options scope to the *next*
+  # output URL only, so without this the preview stream has no duration
+  # limit and keeps the whole process (and thus vhs-gui's REC overlay)
+  # running indefinitely after the archival file closes at MAX_CAPTURE_DURATION.
   preview_out=(
     -map 0:v:0
     -vf "scale=${_preview_scale}"
     -c:v libx264 -preset ultrafast -tune zerolatency -g 15 -pix_fmt yuv420p
-    -an -f mpegts "$_preview_url"
+    -an -t "$MAX_CAPTURE_DURATION" -f mpegts "$_preview_url"
   )
 fi
 
