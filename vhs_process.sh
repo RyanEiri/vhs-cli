@@ -27,6 +27,10 @@ CAPTURES="${VIDEOS}/captures"
 ARCHIVAL="${CAPTURES}/archival"
 STABILIZED="${CAPTURES}/stabilized"
 
+# SCRIPTS_DIR is the sibling vhs-cli repo (data lives under VIDEOS instead).
+SCRIPTS_DIR="${SCRIPTS_DIR:-$HOME/Videos/vhs-cli}"
+DENOISE_SH="${DENOISE_SH:-$SCRIPTS_DIR/vhs_denoise.sh}"
+
 newest_mkv() {
   local dir="$1"
   ls -1t "$dir"/*.mkv 2>/dev/null | head -n 1
@@ -59,7 +63,7 @@ SKIP_QTGMC="${SKIP_QTGMC:-0}"
 NO_LAUNCH="${NO_LAUNCH:-0}"
 QTGMC_FRAMES="${QTGMC_FRAMES:-600}"
 
-VPY="${VPY:-$HOME/Videos/vhs-cli/vhs-env/tools/qtgmc.vpy}"
+VPY="${VPY:-$SCRIPTS_DIR/vhs-env/tools/qtgmc.vpy}"
 [[ -f "$VPY" ]] || VPY="$HOME/Videos/vhs_qtgmc.vpy"
 [[ -f "$VPY" ]] || { echo "ERROR: QTGMC VPY not found (set VPY)." >&2; exit 1; }
 
@@ -86,7 +90,7 @@ else
   if [[ -e "$OUT_STABLE" && "$FORCE" != "1" && "$REDO_DENOISE" != "1" ]]; then
     echo "Reusing existing denoised file: $OUT_STABLE"
   else
-    FORCE="$FORCE" "${VIDEOS}/vhs_denoise.sh" "$IN" "$OUT_STABLE" >/dev/null
+    FORCE="$FORCE" "$DENOISE_SH" "$IN" "$OUT_STABLE" >/dev/null
   fi
 fi
 
