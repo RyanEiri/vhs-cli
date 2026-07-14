@@ -92,6 +92,25 @@ FFPROBE="/usr/bin/ffprobe"
 [ -x "$FFPROBE" ] || { echo "Error: $FFPROBE not found or not executable."; exit 1; }
 command -v "$UPSCALE_BIN" >/dev/null 2>&1 || { echo "Error: $UPSCALE_BIN not found in PATH."; exit 1; }
 
+# Verify Real-ESRGAN produced exactly as many frames as it was given. A
+# silent count mismatch here is too small to trip the SHORT-segment check
+# in _validate_segments (which only flags segments under 1/3 nominal
+# length) but accumulates into real, audible/visible A/V drift across many
+# segments — this is how a real ~9s content loss on a 189-segment job went
+# undetected in production. Fail loudly and immediately instead of
+# silently shipping a shortened segment.
+_verify_frame_count() {
+  local in_count out_count
+  in_count=$(ls "$frames_dir"/*."$FRAME_EXT" 2>/dev/null | wc -l)
+  out_count=$(ls "$upscaled_dir"/*."$FRAME_EXT" 2>/dev/null | wc -l)
+  if [ "$in_count" -ne "$out_count" ]; then
+    echo "Error: Real-ESRGAN produced $out_count frame(s), expected $in_count." >&2
+    echo "       Input : $frames_dir" >&2
+    echo "       Output: $upscaled_dir" >&2
+    exit 1
+  fi
+}
+
 [ -f "$IN" ] || { echo "Error: input file '$IN' not found." >&2; exit 1; }
 [ -d "$MODELS_DIR" ] || { echo "Error: MODELS_DIR '$MODELS_DIR' not found." >&2; exit 1; }
 
@@ -252,6 +271,8 @@ for ((i=0; i<SEG_COUNT; i++)); do
     -g "$VK_DEVICE_INDEX" \
     -f jpg
 
+  _verify_frame_count
+
   echo "  -> Rebuilding segment video at ${FINAL_W}x${FINAL_H} (DAR-correct)..."
   "$FFMPEG" -y \
     -framerate "$fps" \
@@ -390,6 +411,8 @@ if ! _validate_segments; then
       -j "$THREADS" \
       -g "$VK_DEVICE_INDEX" \
       -f jpg
+
+    _verify_frame_count
 
     echo "  -> Rebuilding segment video at ${FINAL_W}x${FINAL_H} (DAR-correct)..."
     "$FFMPEG" -y \
