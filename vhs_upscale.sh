@@ -163,6 +163,24 @@ _verify_frame_count() {
   fi
 }
 
+# Verify the rebuilt segment mp4 actually contains every upscaled frame.
+# ffmpeg's image2 demuxer silently stops at the first gap in a numbered
+# sequence rather than erroring, so a missing file in upscaled_dir (or any
+# other rebuild-stage frame loss) would otherwise ship undetected — this is
+# the one pipeline boundary _verify_frame_count above doesn't cover.
+_verify_segment_frame_count() {
+  local expected actual
+  expected=$(ls "$upscaled_dir"/*."$FRAME_EXT" 2>/dev/null | wc -l)
+  actual=$("$FFPROBE" -v error -select_streams v:0 -count_packets \
+    -show_entries stream=nb_read_packets -of default=nk=1:nw=1 "$seg_out" 2>/dev/null)
+  if [ "$expected" -ne "${actual:-0}" ]; then
+    echo "Error: rebuilt segment has ${actual:-0} frame(s), expected $expected." >&2
+    echo "       Frames: $upscaled_dir" >&2
+    echo "       Output: $seg_out" >&2
+    exit 1
+  fi
+}
+
 [ -f "$IN" ] || { echo "Error: input file '$IN' not found." >&2; exit 1; }
 [ -d "$MODELS_DIR" ] || { echo "Error: MODELS_DIR '$MODELS_DIR' not found." >&2; exit 1; }
 
@@ -365,6 +383,8 @@ for ((i=0; i<SEG_COUNT; i++)); do
     -pix_fmt yuv420p \
     "$seg_out"
 
+  _verify_segment_frame_count
+
   rm -rf "$frames_dir" "$upscaled_dir"
   echo
 
@@ -508,6 +528,8 @@ if ! _validate_segments; then
       -crf "$CRF" \
       -pix_fmt yuv420p \
       "$seg_out"
+
+    _verify_segment_frame_count
 
     rm -rf "$frames_dir" "$upscaled_dir"
     echo
