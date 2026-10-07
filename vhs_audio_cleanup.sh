@@ -34,6 +34,8 @@ Example:
 
 Notes:
   - Always outputs PCM (pcm_s16le) and copies video bit-exact (-c:v copy).
+  - Output length follows the video: audio shorter than the video is padded
+    with silence, audio longer than the video is trimmed.
   - HUM_ENABLE=1 (default) notches HUM_HZ and its 2nd/3rd harmonics.
   - INPUT and OUTPUT may be the same path: output is built in a temp file
     beside OUTPUT and atomically renamed into place.
@@ -161,6 +163,11 @@ esac
 
 # 5) Mux: copy video bit-exact, replace audio with cleaned PCM. Build in a
 #    temp file beside OUTPUT so INPUT == OUTPUT is safe (atomic rename).
+#    The cleaned WAV is only as long as the source's first audio stream, which
+#    can be shorter than the video (capture records them as separate inputs).
+#    Plain -shortest would stop at the audio end and drop copied video frames,
+#    so apad makes the audio endless and -shortest then ends at the video end
+#    (still trimming audio that runs longer than the video).
 out_tmp="$(dirname "$OUT")/.$(basename "$OUT").cleanup.tmp.mkv"
 "$FFMPEG_BIN" -hide_banner -nostdin -y \
   -fflags +genpts -i "$IN" \
@@ -168,6 +175,7 @@ out_tmp="$(dirname "$OUT")/.$(basename "$OUT").cleanup.tmp.mkv"
   -map 0:v:0 -map 1:a:0 \
   -c:v copy \
   -c:a pcm_s16le \
+  -af apad \
   -avoid_negative_ts make_zero \
   -shortest \
   "$out_tmp"
