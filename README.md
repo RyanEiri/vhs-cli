@@ -95,13 +95,36 @@ This pipeline is built and run on a single Linux workstation:
   logs: OBS's decklink plugin was compiled against Desktop Video SDK 12.0,
   but the installed Blackmagic Desktop Video driver is 15.3/15.3.1 — a large
   API version gap. Not yet root-caused or fixed.
-- **Upscale scratch storage:** a secondary drive mounted at
-  `/media/<user>/<external-drive>/Videos/` — `vhs_upscale_work/` (chunked
-  upscale checkpoints) lives there by default (`WORK_ROOT` in the upscale
-  scripts).
+- **Scratch storage:** a secondary drive mounted at `/media/Patriot`.
+  `vhs_upscale_work/` (chunked upscale checkpoints, `WORK_ROOT` in the upscale
+  scripts) lives there, and `captures/archival`, `captures/stabilized` and
+  `captures/viewer` are symlinks into `/media/Patriot/Videos/captures/`
+  (the local disk was nearly full). Scripts keep using the `~/Videos/captures/*`
+  paths.
 
 None of this is hardcoded beyond the defaults above — device paths, `WORK_ROOT`,
 `UPSCALE_BACKEND`, and `MODEL` are all environment-variable overridable per script.
+
+---
+
+## Software
+
+Current stack on the workstation (Ubuntu 26.04.1 LTS, Linux 7.0; upgraded from
+24.04 on 2026-10-08):
+
+- **ffmpeg 8.0.1** (system, `/usr/bin/ffmpeg`) and SoX_ng 14.7. The capture
+  scripts prefer `/usr/local/bin/ffmpeg` (a DeckLink-capable build) when it
+  exists and fall back to `PATH` otherwise.
+- **VapourSynth R55** (`/usr/bin/vspipe`, from a PPA) for QTGMC, IVTC, VDecimate
+  and field alignment. It embeds **Python 3.12**, separate from the system
+  Python 3.14.4, so the `libpython3.12` packages must stay installed. Plugins
+  are loaded explicitly from `~/.local/share/vsrepo/plugins/` and the Python
+  modules (`havsfunc` etc.) from `~/.local/share/vsrepo/py`.
+- **Real-ESRGAN** — `realesrgan-ncnn-vulkan` (Vulkan) and the PyTorch + ROCm
+  driver in `~/opt/realesrgan-rocm` (own virtualenv), reached through
+  `~/bin/realesrgan-rocm`.
+- **Kdenlive** for editing, **OBS Studio** for the `game` slot.
+- The companion GUI (`vhs-gui`) is built with Rust 1.98 (edition 2024).
 
 ---
 
@@ -137,6 +160,8 @@ None of this is hardcoded beyond the defaults above — device paths, `WORK_ROOT
     ├── vhs_vdecimate.sh
     ├── vhs_field_align.sh
     ├── vhs_fix_sync.sh
+    ├── vhs_audio_cleanup.sh
+    ├── test_audio_cleanup.sh
     ├── vhs_probe_crush.sh
     ├── vhs_mode.sh
     ├── backup_vhs_env.sh
@@ -522,6 +547,24 @@ Restores from a named slot or a timestamped backup:
 - Moves the current config aside (`.PRE-RESTORE.*`) before overwriting
 - Refuses to run if OBS or HandBrake are currently open
 - The `game` slot is treated as optional (no error if missing)
+
+---
+
+### 19. `vhs_audio_cleanup.sh`
+**Heavier standalone audio cleanup (hum notch + noise reduction).**
+
+For tapes whose line noise or hum `denoise.sh`'s light `NOISERED_ENABLE` pass doesn't fully clean up. Not wired into any pipeline — run it by hand on an archival, stabilized or viewer MKV.
+
+```bash
+./vhs_audio_cleanup.sh INPUT.mkv OUTPUT.mkv
+```
+
+- Mains-hum notch (fundamental + 2nd/3rd harmonics, `HUM_HZ`, default 60) plus SoX `noisered`
+- Video is copied bit-exact; audio stays PCM (`pcm_s16le`)
+- Output length follows the video: shorter audio is padded with silence, longer audio is trimmed
+- `INPUT` and `OUTPUT` may be the same path (temp file + atomic rename)
+- Check the `NOISE_SS`/`NOISE_T` window (default the first second) is actually quiet before running
+- Tested by `test_audio_cleanup.sh` (video duration and packet count, including a short-audio case)
 
 ---
 
