@@ -56,7 +56,7 @@ The OBS variant (`vhs_obs_edit_prep_pipeline.sh`) skips capture and starts from 
 - `vhs_fix_sync.sh` — corrects A/V drift by computing `atempo` from stream duration differences. Copies video, re-encodes audio (AAC). Chains `atempo` filters for extreme drift values outside 0.5–2.0 range.
 - `vhs_viewer_probe_all.sh` — batch ffprobe of all files in `captures/viewer/`, produces per-file reports and a TSV index in `captures/viewer/_probe_reports/`.
 - `vhs_upscale_bw.sh` — B&W variant of `vhs_upscale.sh`, applies grayscale filter (`hue=s=0`) during frame extraction.
-- `vhs_audio_cleanup.sh` — heavier standalone audio pass for tapes `denoise.sh`'s light `NOISERED_ENABLE` doesn't fully clean up: mains-hum notch (fundamental + 2nd/3rd harmonics, `HUM_HZ`, default 60) plus SoX noisered, always on. Not wired into any pipeline — run by hand against any archival/stabilized/viewer MKV. `INPUT`/`OUTPUT` may be the same path (temp+atomic-rename). Tested via `test_audio_cleanup.sh`.
+- `vhs_audio_cleanup.sh` — heavier standalone audio pass for tapes `denoise.sh`'s light `NOISERED_ENABLE` doesn't fully clean up: mains-hum notch (fundamental + 2nd/3rd harmonics, `HUM_HZ`, default 60) plus SoX noisered, always on. Not wired into any pipeline — run by hand against any archival/stabilized/viewer MKV. `INPUT`/`OUTPUT` may be the same path (temp+atomic-rename). Output length follows the video (audio shorter than the video is padded with silence, longer is trimmed), so no video frames are dropped. Tested via `test_audio_cleanup.sh`, which checks video duration and packet count and includes a short-audio case.
 
 ### Key Design Patterns
 
