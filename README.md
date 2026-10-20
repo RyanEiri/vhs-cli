@@ -91,10 +91,13 @@ This pipeline is built and run on a single Linux workstation:
   capture card currently does **not** — every logged OBS session
   (`vhs-env/game/obs-studio/logs/`) shows `decklink: Starting capture...`
   immediately followed by `decklink: Failed to enable video input`, 100% of
-  attempts across two months of logs. The likely cause visible in those same
-  logs: OBS's decklink plugin was compiled against Desktop Video SDK 12.0,
-  but the installed Blackmagic Desktop Video driver is 15.3/15.3.1 — a large
-  API version gap. Not yet root-caused or fixed.
+  attempts across two months of logs. The OBS plugin was compiled against
+  Desktop Video SDK 12.0 against a 15.3 driver, but that is no longer the whole
+  story: as of 2026-10-09 the driver is Desktop Video 16.4a1 on Ubuntu 26.04 and
+  loads and binds cleanly, yet a DeckLink API probe still receives **zero frames**
+  on every input (Composite, S-Video, Component, HDMI) with a VCR connected, even
+  after a cold power cycle, and MediaExpress shows a blank screen. That points at
+  the card, slot or cable. The card is shelved; captures use the USB dongle.
 - **Scratch storage:** a secondary drive mounted at `/media/Patriot`.
   `vhs_upscale_work/` (chunked upscale checkpoints, `WORK_ROOT` in the upscale
   scripts) lives there, and `captures/archival`, `captures/stabilized` and
@@ -121,8 +124,11 @@ Current stack on the workstation (Ubuntu 26.04.1 LTS, Linux 7.0; upgraded from
   are loaded explicitly from `~/.local/share/vsrepo/plugins/` and the Python
   modules (`havsfunc` etc.) from `~/.local/share/vsrepo/py`.
 - **Real-ESRGAN** — `realesrgan-ncnn-vulkan` (Vulkan) and the PyTorch + ROCm
-  driver in `~/opt/realesrgan-rocm` (own virtualenv), reached through
-  `~/bin/realesrgan-rocm`.
+  driver in `~/opt/realesrgan-rocm`, reached through `~/bin/realesrgan-rocm`. Its
+  own virtualenv is Python 3.14 with torch 2.13 (ROCm 7.1 wheels), rebuilt after the
+  26.04 upgrade; the RX 7800 XT still needs `HSA_OVERRIDE_GFX_VERSION=11.0.0`
+  (the wrapper sets it) and `BATCH_SIZE=2`. The first run after a rebuild spends a
+  couple of minutes compiling HIP kernels.
 - **Kdenlive** for editing, **OBS Studio** for the `game` slot.
 - The companion GUI (`vhs-gui`) is built with Rust 1.98 (edition 2024).
 
