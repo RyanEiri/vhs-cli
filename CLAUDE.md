@@ -107,10 +107,11 @@ The animation variant (`vhs_upscale_anime.sh`) is identical but defaults to the 
 
 ## Dependencies
 
-- ffmpeg (with FFV1 encoder), ffprobe, sox
+- ffmpeg 8.0.1 (Ubuntu 26.04 distro build; FFV1 encoder, no DeckLink support), ffprobe, sox
 - VapourSynth: vspipe, havsfunc (QTGMC), vivtc (IVTC), ffms2, mvtools, fmtconv, nnedi3, miscfilters
+  (R55 `vspipe` embeds Python 3.12 and only runs while the leftover `libpython3.12` packages stay installed; system Python is 3.14)
 - Real-ESRGAN: `realesrgan-ncnn-vulkan` (Vulkan GPU), models in `~/opt/realesrgan-ncnn/models`
-- ROCm upscale: `~/bin/realesrgan-rocm` → `~/opt/realesrgan-rocm/driver.py` (PyTorch+ROCm); use `BATCH_SIZE=2` for x4plus/x4plus-anime on 16 GB VRAM
+- ROCm upscale: `~/bin/realesrgan-rocm` → `~/opt/realesrgan-rocm/driver.py` (PyTorch+ROCm; Python 3.14 venv, torch 2.13 / ROCm 7.1 wheels); use `BATCH_SIZE=2` for x4plus/x4plus-anime on 16 GB VRAM
 - OBS Studio, Kdenlive
 
 ## Philosophy
